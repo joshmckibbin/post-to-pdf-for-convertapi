@@ -1,0 +1,26 @@
+{
+  "name": "post-to-pdf-for-convertapi",
+  "description": "Automatically converts WordPress posts to PDFs using the ConvertAPI API",
+  "keywords": [
+    "WordPress",
+    "Plugin",
+    "PDF",
+    "ConvertAPI"
+  ],
+  "homepage": "https://github.com/joshmckibbin/post-to-pdf-for-convertapi#readme",
+  "bugs": {
+    "url": "https://github.com/joshmckibbin/post-to-pdf-for-convertapi/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joshmckibbin/post-to-pdf-for-convertapi.git"
+  },
+  "license": "GPLv2 or later",
+  "author": "Josh Mckibbin",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "package": "zip -r ../post-to-pdf-for-convertapi.zip . -x \"node_modules/*\" \"*.git*\" \"*.DS_Store\" \"package.json\" \"package-lock.json\" \"*.sh\" ",
+    "install-local": "bash install.sh"
+  }
+}
