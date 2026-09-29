@@ -20,7 +20,6 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "package": "zip -r ../post-to-pdf-for-convertapi.zip . -x \"node_modules/*\" \"*.git*\" \"*.DS_Store\" \"package.json\" \"package-lock.json\" \"*.sh\" ",
-    "install-local": "bash install.sh"
+    "package": "zip -r ../post-to-pdf-for-convertapi.zip . -x \"node_modules/*\" \"*.git*\" \"*.DS_Store\" \"package.json\" \"package-lock.json\" \"*.sh\" \"phpcs.xml\" \".vscode/*\" "
   }
 }

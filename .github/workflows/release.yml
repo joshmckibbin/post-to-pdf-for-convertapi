@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+env:
+  PLUGIN_SLUG: post-to-pdf-for-convertapi
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify tag matches plugin version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          header=$(grep -m1 -E '^\s*\*\s*Version:' "$PLUGIN_SLUG.php" | awk '{print $NF}')
+          constant=$(grep -m1 -oP "define\(\s*'PTPDF_VERSION',\s*'\K[^']+" "$PLUGIN_SLUG.php")
+          stable=$(grep -m1 -E '^Stable tag:' readme.txt | awk '{print $NF}')
+          echo "Tag: $VERSION | Header: $header | PTPDF_VERSION: $constant | Stable tag: $stable"
+          status=0
+          for v in "$header" "$constant" "$stable"; do
+            if [ "$v" != "$VERSION" ]; then status=1; fi
+          done
+          if [ $status -ne 0 ]; then
+            echo "::error::Tag version $VERSION does not match the version in the plugin header, PTPDF_VERSION, or readme.txt Stable tag."
+          fi
+          exit $status
+
+      - name: Lint PHP
+        run: find . -name '*.php' -not -path './node_modules/*' -print0 | xargs -0 -n1 php -l
+
+      - name: Build plugin zip
+        run: |
+          mkdir -p build/"$PLUGIN_SLUG"
+          rsync -a --exclude-from=.distignore --exclude=build ./ build/"$PLUGIN_SLUG"/
+          cd build
+          zip -r "$PLUGIN_SLUG.zip" "$PLUGIN_SLUG"
+          unzip -l "$PLUGIN_SLUG.zip"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ steps.version.outputs.version }}
+          files: build/${{ env.PLUGIN_SLUG }}.zip
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}

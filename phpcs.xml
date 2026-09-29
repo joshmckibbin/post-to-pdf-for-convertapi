@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<ruleset name="Post to PDF for ConvertAPI">
+	<rule ref="WordPress">
+		<!-- Exclude inline comment end character check -->
+		<exclude name="Squiz.Commenting.InlineComment.InvalidEndChar"/>
+
+		<!-- Exclude commented out code -->
+		<exclude name="Squiz.PHP.CommentedOutCode.Found"/>
+
+		<!-- Exclude TODO comments -->
+		<exclude name="Generic.Commenting.Todo"/>
+	</rule>
+
+	<!-- Exclude specific files or directories if needed -->
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+</ruleset>
