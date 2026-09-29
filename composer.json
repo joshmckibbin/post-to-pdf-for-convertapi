@@ -1,0 +1,14 @@
+{
+    "name": "joshmckibbin/post-to-pdf-for-convertapi",
+    "description": "A WordPress plugin that automatically converts posts to PDFs using ConvertAPI",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Josh Mckibbin",
+            "email": "joshmckibbin@gmail.com"
+        }
+    ],
+    "require": {
+        "yahnis-elsts/plugin-update-checker": "^5.7"
+    }
+}

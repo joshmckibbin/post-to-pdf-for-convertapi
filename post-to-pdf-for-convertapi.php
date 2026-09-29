@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Post to PDF for ConvertAPI
  * Description:       Adds a "Download as PDF" link to posts and pages. PDFs are rendered with ConvertAPI and cached in the Media Library.
- * Version:           1.0.2
+ * Version:           1.0.3
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            Josh McKibbin
@@ -13,9 +13,11 @@
  * @package PostToPdfForConvertAPI
  */
 
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+
 defined( 'ABSPATH' ) || exit;
 
-define( 'PTPDF_VERSION', '1.0.2' );
+define( 'PTPDF_VERSION', '1.0.3' );
 define( 'PTPDF_FILE', __FILE__ );
 define( 'PTPDF_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PTPDF_URL', plugin_dir_url( __FILE__ ) );
@@ -31,11 +33,24 @@ define( 'PTPDF_META_SOURCE_MODIFIED', '_ptpdf_source_modified' );
 /** Attachment meta: fingerprint of the render settings at generation time. */
 define( 'PTPDF_META_SETTINGS_HASH', '_ptpdf_settings_hash' );
 
+require_once PTPDF_DIR . 'vendor/autoload.php';
 require_once PTPDF_DIR . 'includes/class-ptpdf-settings.php';
 require_once PTPDF_DIR . 'includes/class-ptpdf-snapshot.php';
 require_once PTPDF_DIR . 'includes/class-ptpdf-converter.php';
 require_once PTPDF_DIR . 'includes/class-ptpdf-editor.php';
 require_once PTPDF_DIR . 'includes/class-ptpdf-frontend.php';
+
+/**
+ * Update checker for the plugin.
+ */
+$ptpdf_update_checker = PucFactory::buildUpdateChecker(
+	'https://github.com/joshmckibbin/post-to-pdf-for-convertapi/',
+	__FILE__,
+	'post-to-pdf-for-convertapi'
+);
+
+// Set the branch for the update checker.
+// $ptpdf_update_checker->setBranch( 'main' );
 
 /**
  * Post types that get the download link.
