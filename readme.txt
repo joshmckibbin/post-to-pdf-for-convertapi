@@ -1,7 +1,7 @@
 === Post to PDF for ConvertAPI ===
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 
 Adds a "Download as PDF" link to posts and pages. PDFs are rendered by ConvertAPI and stored in the Media Library.
