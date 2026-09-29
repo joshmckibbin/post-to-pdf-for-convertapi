@@ -49,6 +49,9 @@ $ptpdf_update_checker = PucFactory::buildUpdateChecker(
 	'post-to-pdf-for-convertapi'
 );
 
+// Enable release assets for the update checker.
+$ptpdf_update_checker->getVcsApi()->enableReleaseAssets( 'post-to-pdf-for-convertapi.zip' );
+
 // Set the branch for the update checker.
 // $ptpdf_update_checker->setBranch( 'main' );
 
