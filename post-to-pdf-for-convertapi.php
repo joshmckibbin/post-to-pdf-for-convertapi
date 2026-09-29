@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Post to PDF for ConvertAPI
  * Description:       Adds a "Download as PDF" link to posts and pages. PDFs are rendered with ConvertAPI and cached in the Media Library.
- * Version:           1.0.3
+ * Version:           1.0.4
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            Josh McKibbin
@@ -17,7 +17,7 @@ use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PTPDF_VERSION', '1.0.3' );
+define( 'PTPDF_VERSION', '1.0.4' );
 define( 'PTPDF_FILE', __FILE__ );
 define( 'PTPDF_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PTPDF_URL', plugin_dir_url( __FILE__ ) );

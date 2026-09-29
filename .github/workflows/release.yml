@@ -61,10 +61,41 @@ jobs:
           zip -r "$PLUGIN_SLUG.zip" "$PLUGIN_SLUG"
           unzip -l "$PLUGIN_SLUG.zip"
 
+      - name: Write release notes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          requires_wp=$(grep -m1 -E '^\s*\*\s*Requires at least:' "$PLUGIN_SLUG.php" | awk '{print $NF}')
+          requires_php=$(grep -m1 -E '^\s*\*\s*Requires PHP:' "$PLUGIN_SLUG.php" | awk '{print $NF}')
+          cat > build/release-notes.md <<EOF
+          ## Requirements
+
+          - WordPress ${requires_wp} or later
+          - PHP ${requires_php} or later
+          - A [ConvertAPI](https://www.convertapi.com/) account and API secret
+
+          ## Installation
+
+          1. Download **\`${PLUGIN_SLUG}.zip\`** from the Assets section below. (Don't use the "Source code" archives; they don't include the required \`vendor/\` dependencies.)
+          2. In WordPress, go to **Plugins → Add New Plugin → Upload Plugin**, choose the zip, and click **Install Now**.
+          3. Activate **Post to PDF for ConvertAPI**.
+          4. Go to **Settings → Post to PDF** and enter your ConvertAPI secret, or define it in \`wp-config.php\`:
+             \`\`\`php
+             define( 'PTPDF_CONVERTAPI_SECRET', 'your-secret' );
+             \`\`\`
+
+          ### Updating
+
+          Once installed, WordPress picks up new releases from this repository automatically and offers them under **Dashboard → Updates**. To update manually, upload the new zip the same way and choose **Replace current with uploaded**.
+
+          EOF
+          cat build/release-notes.md
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ steps.version.outputs.version }}
+          body_path: build/release-notes.md
           files: build/${{ env.PLUGIN_SLUG }}.zip
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}
