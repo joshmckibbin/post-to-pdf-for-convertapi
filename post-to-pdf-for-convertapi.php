@@ -49,8 +49,14 @@ $ptpdf_update_checker = PucFactory::buildUpdateChecker(
 	'post-to-pdf-for-convertapi'
 );
 
-// Enable release assets for the update checker.
-$ptpdf_update_checker->getVcsApi()->enableReleaseAssets( 'post-to-pdf-for-convertapi.zip' );
+/**
+ * Install updates from the built release zip (which includes vendor/), never the source archive.
+ * The regex is passed to preg_match() as-is, so it needs delimiters.
+ *
+ * @var \YahnisElsts\PluginUpdateChecker\v5p7\Vcs\GitHubApi $ptpdf_vcs_api
+ */
+$ptpdf_vcs_api = $ptpdf_update_checker->getVcsApi();
+$ptpdf_vcs_api->enableReleaseAssets( '/^post-to-pdf-for-convertapi\.zip$/', $ptpdf_vcs_api::REQUIRE_RELEASE_ASSETS );
 
 // Set the branch for the update checker.
 // $ptpdf_update_checker->setBranch( 'main' );
