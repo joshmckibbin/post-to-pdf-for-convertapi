@@ -1,6 +1,7 @@
 === Post to PDF for ConvertAPI ===
 Requires at least: 6.3
-Requires PHP: 7.4
+Tested up to: 7.1
+Requires PHP: 8.0
 Stable tag: 1.0.4
 License: GPLv2 or later
 
