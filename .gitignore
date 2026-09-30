@@ -1,4 +1,5 @@
+build/
 node_modules/
 post-to-pdf-for-convertapi.zip
 install.sh
-/vendor/
+vendor/

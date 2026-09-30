@@ -2,7 +2,7 @@
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 
 Adds a "Download as PDF" link to posts and pages. PDFs are rendered by ConvertAPI and stored in the Media Library.
@@ -29,7 +29,7 @@ Settings → Post to PDF:
 * Custom CSS. Extra CSS applied to the page when it is converted. It is appended as the last stylesheet on the page, so it overrides theme styles of equal specificity. It does not affect the live site or the header/footer.
 * Link text. Replaces "Download as PDF"; leave empty for the default.
 * Link CSS. Styles the link on the site (`.ptpdf-download` is the paragraph, `.ptpdf-download a` the link). Printed only on pages that show the link. Changing the link settings does not regenerate PDFs.
-* Header and Footer. Visual editors whose content is printed on every PDF page, with the space (mm) to reserve for each. Placeholders: `{page_number}`, `{total_pages}`, `{title}`, `{url}`, `{date}` (generation date), `{site_name}`. Headers and footers do not inherit theme CSS; images from this site's Media Library are embedded, external images may not render.
+* Header and Footer. Visual editors whose content is printed on every PDF page, with the space (mm) to reserve for each. Placeholders: `{page_number}`, `{total_pages}`, `{title}`, `{url}`, `{date}` (generation date), `{site_name}`, `{current_year}` (e.g. "Copyright © {current_year}"; stored PDFs are regenerated on their first download each new year). Headers and footers do not inherit theme CSS; images from this site's Media Library are embedded, external images may not render.
 * Delete all generated PDFs. Frees the space used by stored PDFs.
 
 == Notes ==

@@ -93,6 +93,10 @@ class PTPDF_Settings {
 		foreach ( self::RENDER_KEYS as $key ) {
 			$relevant[ $key ] = $settings[ $key ];
 		}
+		// A stored PDF showing {current_year} goes stale on 1 January; include the year so it is regenerated.
+		if ( false !== strpos( $settings['header_html'] . $settings['footer_html'], '{current_year}' ) ) {
+			$relevant['year'] = wp_date( 'Y' );
+		}
 		return md5( wp_json_encode( $relevant ) );
 	}
 
@@ -422,7 +426,7 @@ class PTPDF_Settings {
 	 */
 	public static function section_header_footer() {
 		echo '<p>' . esc_html__( 'Printed at the top and bottom of every PDF page. Leave empty for none. You can use these placeholders:', 'post-to-pdf-for-convertapi' ) . '</p>';
-		echo '<p><code>{page_number}</code> <code>{total_pages}</code> <code>{title}</code> <code>{url}</code> <code>{date}</code> <code>{site_name}</code></p>';
+		echo '<p><code>{page_number}</code> <code>{total_pages}</code> <code>{title}</code> <code>{url}</code> <code>{date}</code> <code>{site_name}</code> <code>{current_year}</code></p>';
 		echo '<p class="description">' . esc_html__( 'Headers and footers do not use the site\'s theme styles. Use the editor\'s formatting, and images from this site\'s Media Library (they are embedded).', 'post-to-pdf-for-convertapi' ) . '</p>';
 	}
 

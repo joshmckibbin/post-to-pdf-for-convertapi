@@ -338,12 +338,13 @@ class PTPDF_Converter {
 		$html = strtr(
 			$html,
 			array(
-				'{page_number}' => '<span class="pageNumber"></span>',
-				'{total_pages}' => '<span class="totalPages"></span>',
-				'{title}'       => esc_html( wp_strip_all_tags( get_the_title( $post ) ) ),
-				'{url}'         => esc_html( get_permalink( $post ) ),
-				'{date}'        => esc_html( wp_date( get_option( 'date_format' ) ) ),
-				'{site_name}'   => esc_html( get_bloginfo( 'name' ) ),
+				'{page_number}'  => '<span class="pageNumber"></span>',
+				'{total_pages}'  => '<span class="totalPages"></span>',
+				'{title}'        => esc_html( wp_strip_all_tags( get_the_title( $post ) ) ),
+				'{url}'          => esc_html( get_permalink( $post ) ),
+				'{date}'         => esc_html( wp_date( get_option( 'date_format' ) ) ),
+				'{site_name}'    => esc_html( get_bloginfo( 'name' ) ),
+				'{current_year}' => esc_html( wp_date( 'Y' ) ),
 			)
 		);
 		$html = PTPDF_Snapshot::embed_images( wpautop( $html ) );

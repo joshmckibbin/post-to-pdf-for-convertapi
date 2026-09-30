@@ -13,3 +13,4 @@ composer.lock
 phpcs.xml
 *.sh
 *.zip
+*.md
