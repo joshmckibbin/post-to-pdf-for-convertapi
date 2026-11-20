@@ -1,8 +1,8 @@
 === Post to PDF for ConvertAPI ===
 Requires at least: 6.3
 Tested up to: 7.1
-Requires PHP: 8.0
-Stable tag: 1.0.5
+Requires PHP: 8.2
+Stable tag: 1.1.0
 License: GPLv2 or later
 
 Adds a "Download as PDF" link to posts and pages. PDFs are rendered by ConvertAPI and stored in the Media Library.
@@ -12,7 +12,7 @@ Adds a "Download as PDF" link to posts and pages. PDFs are rendered by ConvertAP
 * A "Download as PDF" link is appended below the content of every published post and page.
 * Each post/page has a "Show 'Download as PDF' link" toggle (block editor: Post sidebar → PDF download; classic editor: side meta box).
 * The first download renders the page with ConvertAPI (HTML to PDF), saves the PDF to the Media Library attached to the post, then sends it to the visitor.
-* While the PDF is generated, a "Preparing your PDF…" message with a spinner shows under the link; the download starts when it is ready, and errors are shown in place. Without JavaScript (or if the REST API is blocked) the link downloads directly.
+* While the PDF is generated, a "Preparing your PDF…" message with a spinner shows under the link; the download starts when it is ready, and errors are shown in place. Without JavaScript (or if the AJAX request fails) the link downloads directly.
 * Video embeds (embed and video blocks, [video] shortcodes, and iframes from YouTube, Vimeo, Wistia, Kaltura, Panopto and other common hosts) are left out of the PDF.
 * Later downloads serve the stored PDF without calling ConvertAPI. When the post or the PDF settings change, the next download renders a fresh PDF and replaces the old one.
 

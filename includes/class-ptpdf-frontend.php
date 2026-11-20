@@ -1,6 +1,6 @@
 <?php
 /**
- * Front end: appends the download link, prepares the PDF over REST, and serves it.
+ * Front end: appends the download link, prepares the PDF over admin-ajax, and serves it.
  *
  * @package PostToPdfForConvertAPI
  */
@@ -8,12 +8,12 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Link output, the ptpdf/v1/prepare REST route, and the ?ptpdf_download=ID endpoint.
+ * Link output, the ptpdf_prepare AJAX action, and the ?ptpdf_download=ID endpoint.
  */
 class PTPDF_Frontend {
 
-	const QUERY_VAR = 'ptpdf_download';
-	const REST_NS   = 'ptpdf/v1';
+	const QUERY_VAR   = 'ptpdf_download';
+	const AJAX_ACTION = 'ptpdf_prepare';
 
 	/**
 	 * Hook everything up.
@@ -23,7 +23,9 @@ class PTPDF_Frontend {
 		add_filter( 'query_vars', array( __CLASS__, 'query_vars' ) );
 		add_action( 'template_redirect', array( __CLASS__, 'maybe_serve' ), 1 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_assets' ) );
-		add_action( 'rest_api_init', array( __CLASS__, 'register_rest_route' ) );
+		// Public on purpose, like the link itself; is_enabled_for() limits it to published, linked posts.
+		add_action( 'wp_ajax_' . self::AJAX_ACTION, array( __CLASS__, 'ajax_prepare' ) );
+		add_action( 'wp_ajax_nopriv_' . self::AJAX_ACTION, array( __CLASS__, 'ajax_prepare' ) );
 	}
 
 	/**
@@ -72,7 +74,7 @@ class PTPDF_Frontend {
 		}
 
 		$post = get_post();
-		if ( ! $post || $post->ID !== get_queried_object_id() || ! self::is_enabled_for( $post ) ) {
+		if ( ! $post || get_queried_object_id() !== $post->ID || ! self::is_enabled_for( $post ) ) {
 			return $content;
 		}
 
@@ -130,7 +132,8 @@ class PTPDF_Frontend {
 		);
 
 		$config = array(
-			'restUrl' => esc_url_raw( rest_url( self::REST_NS . '/prepare/' ) ),
+			'ajaxUrl' => esc_url_raw( admin_url( 'admin-ajax.php' ) ),
+			'action'  => self::AJAX_ACTION,
 			'i18n'    => array(
 				'preparing' => __( 'Preparing your PDF…', 'post-to-pdf-for-convertapi' ),
 				'slow'      => __( 'Still working, this can take up to a minute…', 'post-to-pdf-for-convertapi' ),
@@ -144,11 +147,6 @@ class PTPDF_Frontend {
 		 * @param array $messages Keys: preparing, slow, starting, error.
 		 */
 		$config['i18n'] = apply_filters( 'ptpdf_frontend_messages', $config['i18n'] );
-		// Logged-in users (e.g. admins who should see error details) need a nonce for cookie auth over REST.
-		// Logged-in pages are not normally page-cached, so the nonce will not leak into a shared cache.
-		if ( is_user_logged_in() ) {
-			$config['nonce'] = wp_create_nonce( 'wp_rest' );
-		}
 		wp_add_inline_script( 'ptpdf-frontend', 'window.ptpdfFrontend = ' . wp_json_encode( $config ) . ';', 'before' );
 
 		$css = PTPDF_Settings::get()['link_css'];
@@ -158,56 +156,43 @@ class PTPDF_Frontend {
 	}
 
 	/**
-	 * REST route the link script calls to generate the PDF before downloading it.
-	 */
-	public static function register_rest_route() {
-		register_rest_route(
-			self::REST_NS,
-			'/prepare/(?P<id>\d+)',
-			array(
-				'methods'             => 'POST',
-				'callback'            => array( __CLASS__, 'rest_prepare' ),
-				// Public on purpose, like the link itself; is_enabled_for() limits it to published, linked posts.
-				'permission_callback' => '__return_true',
-				'args'                => array(
-					'id' => array(
-						'type'     => 'integer',
-						'required' => true,
-					),
-				),
-			)
-		);
-	}
-
-	/**
-	 * Generate (or find) the PDF and return the URL that downloads it.
+	 * AJAX handler the link script calls to generate the PDF before downloading it.
 	 *
-	 * @param WP_REST_Request $request Request.
-	 * @return WP_REST_Response|WP_Error
+	 * No nonce: the action is public (anyone can trigger generation via the plain download link),
+	 * so a nonce would only add stale-nonce failures on cached pages. Logged-in users are
+	 * recognised by their auth cookie, which is how administrators get error details.
 	 */
-	public static function rest_prepare( WP_REST_Request $request ) {
-		$post = get_post( (int) $request['id'] );
+	public static function ajax_prepare() {
+		nocache_headers();
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- public, read-only action; see above.
+		$post_id = isset( $_POST['post_id'] ) ? absint( wp_unslash( $_POST['post_id'] ) ) : 0;
+		$post    = $post_id ? get_post( $post_id ) : null;
+
 		if ( ! self::is_enabled_for( $post ) ) {
-			return new WP_Error( 'ptpdf_unavailable', __( 'A PDF is not available for this content.', 'post-to-pdf-for-convertapi' ), array( 'status' => 404 ) );
+			wp_send_json_error(
+				array(
+					'code'    => 'ptpdf_unavailable',
+					'message' => __( 'A PDF is not available for this content.', 'post-to-pdf-for-convertapi' ),
+				),
+				404
+			);
 		}
 
 		$attachment_id = PTPDF_Converter::get_or_create( $post );
 		if ( is_wp_error( $attachment_id ) ) {
 			$data  = (array) $attachment_id->get_error_data();
-			$error = new WP_Error(
-				$attachment_id->get_error_code(),
-				$attachment_id->get_error_message(),
-				array( 'status' => isset( $data['status'] ) ? (int) $data['status'] : 500 )
+			$error = array(
+				'code'    => $attachment_id->get_error_code(),
+				'message' => $attachment_id->get_error_message(),
 			);
 			if ( ! empty( $data['detail'] ) && current_user_can( 'manage_options' ) ) {
-				$error->add_data( array_merge( $error->get_error_data(), array( 'detail' => $data['detail'] ) ) );
+				$error['detail'] = $data['detail'];
 			}
-			return $error;
+			wp_send_json_error( $error, isset( $data['status'] ) ? (int) $data['status'] : 500 );
 		}
 
-		$response = rest_ensure_response( array( 'url' => self::download_url( $post->ID ) ) );
-		$response->header( 'Cache-Control', 'no-store' );
-		return $response;
+		wp_send_json_success( array( 'url' => self::download_url( $post->ID ) ) );
 	}
 
 	/**
@@ -236,8 +221,8 @@ class PTPDF_Frontend {
 				esc_html__( 'PDF unavailable', 'post-to-pdf-for-convertapi' ),
 				array(
 					'response'  => isset( $data['status'] ) ? (int) $data['status'] : 500,
-					'link_url'  => get_permalink( $post ),
-					'link_text' => __( 'Back to the page', 'post-to-pdf-for-convertapi' ),
+					'link_url'  => esc_url( get_permalink( $post ) ),
+					'link_text' => esc_html__( 'Back to the page', 'post-to-pdf-for-convertapi' ),
 				)
 			);
 		}

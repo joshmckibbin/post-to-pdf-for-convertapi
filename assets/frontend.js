@@ -26,7 +26,7 @@
 	document.addEventListener( 'click', function ( event ) {
 		var link = event.target.closest && event.target.closest( 'a[data-ptpdf-post]' );
 		// Let modified clicks (new tab, etc.) and pages without config behave like a normal link.
-		if ( ! link || ! config.restUrl || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ) {
+		if ( ! link || ! config.ajaxUrl || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ) {
 			return;
 		}
 		event.preventDefault();
@@ -42,39 +42,30 @@
 			setStatus( wrap, i18n.slow, 'busy' );
 		}, SLOW_AFTER_MS );
 
-		var url = config.restUrl + link.getAttribute( 'data-ptpdf-post' );
+		var body = new URLSearchParams();
+		body.append( 'action', config.action || 'ptpdf_prepare' );
+		body.append( 'post_id', link.getAttribute( 'data-ptpdf-post' ) );
 
-		function prepare( nonce ) {
-			var headers = { Accept: 'application/json' };
-			if ( nonce ) {
-				headers[ 'X-WP-Nonce' ] = nonce;
-			}
-
-			return fetch( url, {
-				method: 'POST',
-				credentials: 'same-origin',
-				headers: headers,
-			} ).then( function ( response ) {
+		fetch( config.ajaxUrl, {
+			method: 'POST',
+			credentials: 'same-origin',
+			headers: { Accept: 'application/json' },
+			body: body,
+		} )
+			.then( function ( response ) {
 				return response.json().then(
-					function ( body ) {
-						return { ok: response.ok, body: body };
+					function ( json ) {
+						// admin-ajax answers a bare 0 / -1 when the action is unknown or blocked.
+						if ( ! json || typeof json !== 'object' ) {
+							throw new Error( 'fallback' );
+						}
+						return { ok: response.ok && json.success === true, body: json.data };
 					},
 					function () {
-						// Not JSON: the REST API is blocked or broken. Fall back to the plain link.
+						// Not JSON: admin-ajax is blocked or broken. Fall back to the plain link.
 						throw new Error( 'fallback' );
 					}
 				);
-			} );
-		}
-
-		prepare( config.nonce )
-			.then( function ( result ) {
-				// A stale nonce (cached page, long-open tab, re-login) makes core reject the request
-				// with "Cookie check failed". The route is public, so retry anonymously.
-				if ( config.nonce && ! result.ok && result.body && result.body.code === 'rest_cookie_invalid_nonce' ) {
-					return prepare( null );
-				}
-				return result;
 			} )
 			.then( function ( result ) {
 				clearTimeout( slowTimer );
@@ -91,7 +82,7 @@
 				}
 
 				var message = ( result.body && result.body.message ) || i18n.error;
-				var detail = result.body && result.body.data && result.body.data.detail;
+				var detail = result.body && result.body.detail;
 				setStatus( wrap, detail ? message + ' (' + detail + ')' : message, 'error' );
 			} )
 			.catch( function () {
