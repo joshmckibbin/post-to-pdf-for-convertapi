@@ -118,6 +118,8 @@ class PTPDF_Snapshot {
 
 		$xpath = new DOMXPath( $doc );
 
+		// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- native DOM properties.
+
 		// Stylesheets → <style>.
 		foreach ( iterator_to_array( $xpath->query( '//link[@href]' ) ) as $link ) {
 			$rel = strtolower( $link->getAttribute( 'rel' ) );
@@ -180,6 +182,8 @@ class PTPDF_Snapshot {
 			}
 		}
 
+		// phpcs:enable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+
 		$out = $doc->saveHTML();
 		return str_replace( '<?xml encoding="UTF-8">', '', $out );
 	}
@@ -191,10 +195,12 @@ class PTPDF_Snapshot {
 	 * @param string     $text Text.
 	 */
 	private function set_text( DOMElement $el, $text ) {
+		// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- native DOM properties.
 		while ( $el->firstChild ) {
 			$el->removeChild( $el->firstChild );
 		}
 		$el->appendChild( $el->ownerDocument->createTextNode( $text ) );
+		// phpcs:enable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 	}
 
 	/**
@@ -243,6 +249,7 @@ class PTPDF_Snapshot {
 			return null;
 		}
 		$bytes = $this->read_local( $url, $ext );
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- encoding assets as data: URIs.
 		return null === $bytes ? null : 'data:' . self::MIME_TYPES[ $ext ] . ';base64,' . base64_encode( $bytes );
 	}
 

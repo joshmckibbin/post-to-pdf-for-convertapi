@@ -455,7 +455,7 @@ class PTPDF_Settings {
 			'header' === $part ? esc_html__( 'Space reserved at the top of each page:', 'post-to-pdf-for-convertapi' ) : esc_html__( 'Space reserved at the bottom of each page:', 'post-to-pdf-for-convertapi' ),
 			esc_attr( self::OPTION ),
 			esc_attr( $part ),
-			(int) $settings[ $part . '_height' ]
+			(int) $settings[ $part . '_height' ] //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- number input, safe.
 		);
 	}
 

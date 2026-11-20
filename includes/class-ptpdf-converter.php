@@ -279,9 +279,12 @@ class PTPDF_Converter {
 			$params['UserJs'] = implode( "\n", $scripts );
 		}
 
-		foreach ( array( 'header' => 'Top', 'footer' => 'Bottom' ) as $part => $side ) {
+		foreach ( array(
+			'header' => 'Top',
+			'footer' => 'Bottom',
+		) as $part => $side ) {
 			if ( '' !== $settings[ $part . '_html' ] ) {
-				$params[ ucfirst( $part ) ]  = self::header_footer_template( $settings[ $part . '_html' ], $post );
+				$params[ ucfirst( $part ) ] = self::header_footer_template( $settings[ $part . '_html' ], $post );
 				$params[ 'Margin' . $side ] = (int) $settings[ $part . '_height' ];
 			}
 		}

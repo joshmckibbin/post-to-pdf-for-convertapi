@@ -6,7 +6,13 @@ PLUGIN_SLUG="post-to-pdf-for-convertapi"
 mkdir -p build/"$PLUGIN_SLUG"
 
 # Copy the plugin files to the build directory, excluding files listed in .distignore and the build directory itself.
-rsync -a --exclude-from=.distignore --exclude=build ./ build/"$PLUGIN_SLUG"/
+# vendor/ is rebuilt below without dev dependencies (phpcs etc.).
+rsync -a --exclude-from=.distignore --exclude=build --exclude=vendor ./ build/"$PLUGIN_SLUG"/
+
+# Install production dependencies only.
+cp composer.json composer.lock build/"$PLUGIN_SLUG"/
+composer install --working-dir=build/"$PLUGIN_SLUG" --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader || exit 1
+rm build/"$PLUGIN_SLUG"/composer.json build/"$PLUGIN_SLUG"/composer.lock
 
 # Extract the version number from the main plugin file.
 PLUGIN_VERSION=$(sed -n 's/^[[:space:]*]*Version:[[:space:]]*\([^[:space:]]*\).*/\1/p' "build/$PLUGIN_SLUG/$PLUGIN_SLUG.php" | head -n 1)
